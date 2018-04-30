@@ -43,22 +43,48 @@ int bin2dec(string input) {
 		return (answer*power) + bin2dec(input.substr(1, input.length() - 1));
 	}
 }
-
-template<class T>
-bool checkInput(string &userinput, T &validated) {
-	stringstream inputstream(userinput);
-	if (inputstream >> validated)//if value is inserted into T validated w/o error
-		return true;
-	else
+template <class T>
+bool checkInput(string userinput, T &validated) {
+	if (userinput.length() == 0)
+		return false; //nothing on userinput
+	else if (userinput.length() ==1)//if on userinput[last]
 	{
-		cout << "Enter valid value" << endl;//ask for another input
-		getline(cin, userinput);
-		return checkInput<T>(userinput,validated);//call recursive fx with new input;
-		/*
-		if nth recursive call doesn't return true
-		it will continue to call n+1th recursive fx until it does
-		after which first checkInput fx will eventually return true;
-		*/
+		stringstream inputstream(userinput.substr(0, 1));
+		if (inputstream >> validated)//if last value is validated
+		{
+			return 1;
+			/*
+			since all previous recursion(if any) must be true  to check for userinput[last]
+			returning true will cascade return true until origin function
+			*/
+		}
+		else
+			return 0;
+			/*
+			likewise if userinput[last] validates to be false
+			it will cascade to return false;
+			*/
+	}
+	else//if on userinput[x]
+	{
+		stringstream inputstream(userinput.substr(0, 1));
+		if (inputstream >> validated)
+			return checkInput(userinput.substr(1, userinput.length() - 1), validated);//RECURSION!!!
+		else
+			return false;
+			/*
+			if, at any time during the recursion, validation return false, it will cascade return false
+			and no further recursion is made
+			*/
+	}
+}
+
+bool binarycheck(string userinput) {
+	for (size_t i = 0; i < userinput.length();)
+	{
+		if ((userinput[i] == '0') || (userinput[i] == '1'))
+			i++;
+		else return false;
 	}
 }
 
@@ -79,13 +105,24 @@ int main()
 	//dynamic test dec2bin
 	cout << "Enter custom decimal to be converted" << endl;
 	getline(cin, testvalue);
-	checkInput<int>(testvalue, decimal);
+	while (!checkInput<int>(testvalue, decimal))//validate input
+	{
+		cout << "Wrong input" << endl;
+		getline(cin, testvalue);
+	}
+	stringstream ss(testvalue); ss >> decimal; //save user input to decimal
 	cout << decimal << " in binary is : " << dec2bin(decimal) << endl;
 
 	//dynamic test bin2dec
 	cout << "Enter custom binary to be converted" << endl;
 	getline(cin, binary);
+	while(!binarycheck(binary))
+	{
+		cout << "Wrong input" << endl;
+		getline(cin, binary);
+	}
 	cout << binary << " in decimal is : " << bin2dec(binary) << endl;
+
 
 	system("pause");
 	return 0;
